@@ -1,6 +1,19 @@
 @Products.API_HostAddress = http://localhost:5208
 
-GET {{Products.API_HostAddress}}/weatherforecast/
+GET {{Products.API_HostAddress}}/products/
 Accept: application/json
+
+###
+
+POST {{Products.API_HostAddress}}/products/
+Content-Type: application/json
+
+{
+  "name": "Notebook",
+  "description": "Producto de ejemplo",
+  "price": 1500,
+  "stock": 10,
+  "category": "Tecnologia"
+}
 
 ###
