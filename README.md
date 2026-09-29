@@ -10,7 +10,9 @@ Trabajo practico de Construccion de Aplicaciones Informaticas.
 
 ## Proyecto
 
-Sistema e-commerce desarrollado en C# y .NET, organizado como una arquitectura de microservicios.
+La idea del proyecto es armar un e-commerce en C# y .NET usando microservicios.
+
+Por ahora empezamos con `Products.API`, tomando como base la MiniApi que paso la catedra. La adaptamos para manejar productos, stock y categorias.
 
 ## Microservicios previstos
 
@@ -24,16 +26,15 @@ Sistema e-commerce desarrollado en C# y .NET, organizado como una arquitectura d
 
 ## Arquitectura base
 
-El proyecto toma como referencia la arquitectura MiniApi provista por la catedra, separando configuracion, endpoints, middleware, acceso a datos, health checks y logging.
+La estructura sigue la base que paso el profesor:
 
-Products.API incluye:
+- `Program.cs` deja la configuracion principal.
+- `Extensions` separa servicios, middleware, endpoints y logging.
+- `Data` contiene la inicializacion de SQLite y el repositorio.
+- `Models` contiene los modelos y requests de productos.
+- `HealthChecks` permite revisar si la API y la base estan funcionando.
 
-- Endpoints REST para listar, consultar, crear, modificar y eliminar productos.
-- Persistencia local con SQLite.
-- Swagger UI para probar la API desde el navegador.
-- Health checks para validar estado de la API y la base SQLite.
-- Middleware de auditoria para operaciones POST, PUT y DELETE.
-- Logging con Serilog en consola y archivo.
+Tambien dejamos Swagger para probar la API desde el navegador y un middleware de auditoria para las operaciones que modifican datos.
 
 ## Ejecucion
 
