@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Orders.API.Exceptions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Orders.API.Extensions;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Orders.API.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddAppLogging();
@@ -67,6 +71,11 @@ builder.Services.AddHttpClient<ProductsClient>(client =>
     client.BaseAddress = new Uri(direccion);
     client.Timeout = TimeSpan.FromSeconds(5);
 });
+builder.Services.AddHealthChecks()
+    .AddCheck<OrdersDatabaseHealthCheck>("sqlite-db", tags: ["ready"])
+    .AddCheck("api-status",
+        () => HealthCheckResult.Healthy("Orders.API está operativa."),
+        tags: ["live"]);
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
@@ -115,5 +124,22 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live"),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 app.Run();
