@@ -1,5 +1,6 @@
 using Orders.API.ExceptionHandlers;
 using Orders.API.Services;
+using Orders.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +10,16 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<OrdersService>();
 builder.Services.AddExceptionHandler<OrderValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
+builder.Services.AddSingleton<DatabaseInitializer>();
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var initializer =
+        scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
+
+    initializer.Initialize();
+}
 app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
