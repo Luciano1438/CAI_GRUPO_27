@@ -141,6 +141,56 @@ public async Task<OrderResponse> BuscarAsync(Guid id)
     return ConvertirAResponse(orden);
 }
 
+public async Task<UpdateOrderStatusResponse> CambiarEstadoAsync(
+    Guid id, UpdateOrderStatusRequest request)
+{
+    string nuevoEstado = request.Estado?.Trim() ?? string.Empty;
+
+    if (nuevoEstado != "Pendiente" && nuevoEstado != "Confirmada"
+        && nuevoEstado != "Enviada" && nuevoEstado != "Entregada"
+        && nuevoEstado != "Cancelada")
+    {
+        throw new OrderValidationException("El estado indicado no es válido.");
+    }
+
+    Order? orden = await _repository.GetByIdAsync(id);
+
+    if (orden == null)
+    {
+        throw new OrderNotFoundException();
+    }
+
+    bool permitida = orden.Estado switch
+    {
+        "Pendiente" => nuevoEstado == "Confirmada" || nuevoEstado == "Cancelada",
+        "Confirmada" => nuevoEstado == "Enviada" || nuevoEstado == "Cancelada",
+        "Enviada" => nuevoEstado == "Entregada",
+        _ => false
+    };
+
+    if (!permitida)
+    {
+        throw new OrderStatusConflictException(
+            $"No se puede cambiar de {orden.Estado} a {nuevoEstado}.");
+    }
+
+    DateTime fechaActualizacion = DateTime.UtcNow;
+    bool actualizado = await _repository.ActualizarEstadoAsync(
+        id, orden.Estado, nuevoEstado, fechaActualizacion);
+
+    if (!actualizado)
+    {
+        throw new OrderStatusConflictException(
+            "El estado de la orden cambió durante la solicitud.");
+    }
+
+    return new UpdateOrderStatusResponse
+    {
+        Id = id,
+        Estado = nuevoEstado,
+        FechaActualizacion = fechaActualizacion
+    };
+}
 private static OrderResponse ConvertirAResponse(Order orden)
 {
     var respuesta = new OrderResponse

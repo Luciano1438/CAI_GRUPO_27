@@ -47,4 +47,14 @@ public async Task<ActionResult<OrderResponse>> Crear(
 
     return CreatedAtAction(nameof(Buscar), new { id = orden.Id }, orden);
 }
+[HttpPut("{id:guid}/status")]
+[ProducesResponseType(typeof(UpdateOrderStatusResponse), StatusCodes.Status200OK)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+public async Task<ActionResult<UpdateOrderStatusResponse>> CambiarEstado(
+    Guid id, [FromBody] UpdateOrderStatusRequest request)
+{
+    var respuesta = await _service.CambiarEstadoAsync(id, request);
+
+    return Ok(respuesta);
+}
 }

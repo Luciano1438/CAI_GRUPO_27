@@ -170,6 +170,38 @@ private async Task<List<Order>> BuscarAsync(Guid? usuarioId, Guid? id)
 
     transaction.Commit();
 }
+public async Task<bool> ActualizarEstadoAsync(
+    Guid id, string estadoActual, string nuevoEstado, DateTime fechaActualizacion)
+{
+    string? connectionString =
+        _configuration.GetConnectionString("DefaultConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException(
+            "Falta configurar la conexion de Orders.");
+    }
+
+    using var connection = new SqliteConnection(connectionString);
+
+    int filas = await connection.ExecuteAsync(
+        """
+        UPDATE orders
+        SET estado = @NuevoEstado,
+            fecha_actualizacion = @FechaActualizacion
+        WHERE id = @Id AND estado = @EstadoActual;
+        """,
+        new
+        {
+            Id = id.ToString(),
+            EstadoActual = estadoActual,
+            NuevoEstado = nuevoEstado,
+            FechaActualizacion = fechaActualizacion.ToString(
+                "O", CultureInfo.InvariantCulture)
+        });
+
+    return filas == 1;
+}
     private class OrdenGuardada
     {
         public string Id { get; set; } = string.Empty;

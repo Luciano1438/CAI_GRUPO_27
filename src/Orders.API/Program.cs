@@ -44,6 +44,7 @@ builder.Services.AddScoped<OrderRepository>();
 builder.Services.AddExceptionHandler<OrderValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<OrderNotFoundExceptionHandler>();
 builder.Services.AddExceptionHandler<InsufficientStockExceptionHandler>();
+builder.Services.AddExceptionHandler<OrderStatusConflictExceptionHandler>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<DatabaseInitializer>();
