@@ -50,6 +50,14 @@ builder.Services.AddHttpClient<UsersClient>(client =>
     client.BaseAddress = new Uri(direccion);
     client.Timeout = TimeSpan.FromSeconds(5);
 });
+builder.Services.AddHttpClient<ProductsClient>(client =>
+{
+    string direccion = builder.Configuration["Services:Products"]
+        ?? throw new InvalidOperationException("Falta configurar Services:Products.");
+
+    client.BaseAddress = new Uri(direccion);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
