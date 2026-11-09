@@ -2,12 +2,39 @@ using Orders.API.ExceptionHandlers;
 using Orders.API.Services;
 using Orders.API.Data;
 using Orders.API.Middleware;
+using Microsoft.AspNetCore.Mvc;
+using Orders.API.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var http = context.HttpContext;
+        const string mensaje = "Los datos de la orden son inválidos.";
+
+        var problema = new ProblemDetails
+        {
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+            Title = "Bad Request",
+            Status = 400,
+            Detail = mensaje,
+            Instance = http.Request.Path.Value
+        };
+
+        problema.Extensions["errorCode"] = OrderValidationException.ErrorCode;
+        problema.Extensions["errorMessage"] = mensaje;
+        problema.Extensions["correlationId"] = http.TraceIdentifier;
+
+        var respuesta = new BadRequestObjectResult(problema);
+        respuesta.ContentTypes.Add("application/problem+json");
+
+        return respuesta;
+    };
+});
 builder.Services.AddScoped<OrdersService>();
 builder.Services.AddScoped<OrderRepository>();
 builder.Services.AddExceptionHandler<OrderValidationExceptionHandler>();
@@ -25,7 +52,35 @@ using (var scope = app.Services.CreateScope())
 }
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseExceptionHandler();
+app.UseStatusCodePages(async statusContext =>
+{
+    var http = statusContext.HttpContext;
+    int status = http.Response.StatusCode;
 
+    if (status != 404 && status != 405)
+    {
+        return;
+    }
+
+    string codigo = status == 404
+        ? OrderNotFoundException.ErrorCode
+        : OrderValidationException.ErrorCode;
+
+    string mensaje = status == 404
+        ? "La ruta solicitada no existe."
+        : "El método HTTP no está permitido para esta ruta.";
+
+    await Results.Problem(
+        statusCode: status,
+        detail: mensaje,
+        instance: http.Request.Path.Value,
+        extensions: new Dictionary<string, object?>
+        {
+            ["errorCode"] = codigo,
+            ["errorMessage"] = mensaje,
+            ["correlationId"] = http.TraceIdentifier
+        }).ExecuteAsync(http);
+});
 // Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
