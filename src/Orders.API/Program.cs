@@ -42,6 +42,14 @@ builder.Services.AddExceptionHandler<OrderNotFoundExceptionHandler>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<DatabaseInitializer>();
+builder.Services.AddHttpClient<UsersClient>(client =>
+{
+    string direccion = builder.Configuration["Services:Users"]
+        ?? throw new InvalidOperationException("Falta configurar Services:Users.");
+
+    client.BaseAddress = new Uri(direccion);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
