@@ -1,6 +1,7 @@
 using Orders.API.ExceptionHandlers;
 using Orders.API.Services;
 using Orders.API.Data;
+using Orders.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,7 @@ using (var scope = app.Services.CreateScope())
 
     initializer.Initialize();
 }
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
