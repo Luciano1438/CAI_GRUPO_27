@@ -6,6 +6,7 @@ namespace Orders.API.Controllers;
 
 [ApiController]
 [Route("api/orders")]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
 public class OrdersController : ControllerBase
 {
     private readonly OrdersService _service;
@@ -16,10 +17,12 @@ public class OrdersController : ControllerBase
     }
 
     /// <summary>
-    /// Lista las ordenes, con filtro opcional por usuario.
+    /// Lista las órdenes, con filtro opcional por usuario.
     /// </summary>
+    /// <param name="usuarioId">Identificador del usuario por el cual filtrar.</param>
     [HttpGet]
     [ProducesResponseType(typeof(List<OrderResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<List<OrderResponse>>> Listar(
         [FromQuery] Guid? usuarioId)
     {
@@ -27,34 +30,68 @@ public class OrdersController : ControllerBase
 
         return Ok(ordenes);
     }
+
+    /// <summary>
+    /// Obtiene una orden por su identificador.
+    /// </summary>
+    /// <response code="404">La orden no existe (ORD-001).</response>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OrderResponse>> Buscar(Guid id)
     {
-      OrderResponse orden = await _service.BuscarAsync(id);
+        OrderResponse orden = await _service.BuscarAsync(id);
 
-      return Ok(orden);
+        return Ok(orden);
     }
+
+    /// <summary>
+    /// Crea una orden validando el usuario, los productos y el stock.
+    /// </summary>
+    /// <remarks>
+    /// Agrupa los productos repetidos y calcula el total con los precios
+    /// obtenidos de Products.API.
+    /// </remarks>
+    /// <response code="201">Orden creada. Location indica la URL de consulta.</response>
+    /// <response code="400">Los datos enviados son inválidos (ORD-002).</response>
+    /// <response code="404">El usuario o un producto no existe (ORD-003 u ORD-004).</response>
+    /// <response code="415">El tipo de contenido no es compatible. Enviar application/json.</response>
+    /// <response code="422">Un producto no tiene stock suficiente (ORD-005).</response>
     [HttpPost]
-[ProducesResponseType(typeof(OrderResponse), StatusCodes.Status201Created)]
-public async Task<ActionResult<OrderResponse>> Crear(
-    [FromBody] CreateOrderRequest request,
-    CancellationToken cancellationToken)
-{
-    OrderResponse orden = await _service.CrearAsync(
-        request, HttpContext.TraceIdentifier, cancellationToken);
+    [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status415UnsupportedMediaType)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public async Task<ActionResult<OrderResponse>> Crear(
+        [FromBody] CreateOrderRequest request,
+        CancellationToken cancellationToken)
+    {
+        OrderResponse orden = await _service.CrearAsync(
+            request, HttpContext.TraceIdentifier, cancellationToken);
 
-    return CreatedAtAction(nameof(Buscar), new { id = orden.Id }, orden);
-}
-[HttpPut("{id:guid}/status")]
-[ProducesResponseType(typeof(UpdateOrderStatusResponse), StatusCodes.Status200OK)]
-[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-public async Task<ActionResult<UpdateOrderStatusResponse>> CambiarEstado(
-    Guid id, [FromBody] UpdateOrderStatusRequest request)
-{
-    var respuesta = await _service.CambiarEstadoAsync(id, request);
+        return CreatedAtAction(nameof(Buscar), new { id = orden.Id }, orden);
+    }
 
-    return Ok(respuesta);
-}
+    /// <summary>
+    /// Cambia el estado de una orden.
+    /// </summary>
+    /// <response code="400">Los datos enviados son inválidos (ORD-002).</response>
+    /// <response code="404">La orden no existe (ORD-001).</response>
+    /// <response code="409">El cambio de estado no está permitido (ORD-006).</response>
+    /// <response code="415">El tipo de contenido no es compatible. Enviar application/json.</response>
+    [HttpPut("{id:guid}/status")]
+    [ProducesResponseType(typeof(UpdateOrderStatusResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status415UnsupportedMediaType)]
+    public async Task<ActionResult<UpdateOrderStatusResponse>> CambiarEstado(
+        Guid id,
+        [FromBody] UpdateOrderStatusRequest request)
+    {
+        var respuesta = await _service.CambiarEstadoAsync(id, request);
+
+        return Ok(respuesta);
+    }
 }

@@ -77,6 +77,12 @@ builder.Services.AddHealthChecks()
         () => HealthCheckResult.Healthy("Orders.API está operativa."),
         tags: ["live"]);
 
+builder.Services.AddSwaggerGen(options =>
+{
+    options.IncludeXmlComments(
+        Path.Combine(AppContext.BaseDirectory, "Orders.API.xml"));
+});
+
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
@@ -122,6 +128,12 @@ app.UseStatusCodePages(async statusContext =>
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.MapControllers();
 
