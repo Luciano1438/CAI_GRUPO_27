@@ -9,11 +9,16 @@ public class OrdersService
 {
   private readonly OrderRepository _repository;
 private readonly UsersClient _usersClient;
+private readonly ProductsClient _productsClient;
 
-public OrdersService(OrderRepository repository, UsersClient usersClient)
+public OrdersService(
+    OrderRepository repository,
+    UsersClient usersClient,
+    ProductsClient productsClient)
 {
     _repository = repository;
     _usersClient = usersClient;
+    _productsClient = productsClient;
 }
 
 public async Task ValidarUsuarioAsync(
@@ -30,7 +35,44 @@ public async Task ValidarUsuarioAsync(
     }
 }
 
+private async Task<List<OrderItem>> PrepararItemsAsync(
+    List<CreateOrderItemRequest> items,
+    string correlationId,
+    CancellationToken cancellationToken)
+{
+    var cantidades = new Dictionary<Guid, long>();
 
+    foreach (CreateOrderItemRequest item in items)
+    {
+        cantidades.TryGetValue(item.ProductoId, out long cantidadAcumulada);
+        cantidades[item.ProductoId] = cantidadAcumulada + item.Cantidad;
+    }
+
+    var itemsPreparados = new List<OrderItem>();
+
+    foreach (var par in cantidades)
+    {
+        Guid productoId = par.Key;
+        long cantidad = par.Value;
+
+        var producto = await _productsClient.BuscarAsync(
+            productoId, correlationId, cancellationToken);
+
+        if (cantidad > producto.Stock)
+        {
+            throw new InsufficientStockException(productoId);
+        }
+
+        itemsPreparados.Add(new OrderItem
+        {
+            ProductoId = productoId,
+            Cantidad = (int)cantidad,
+            PrecioUnitario = producto.Precio
+        });
+    }
+
+    return itemsPreparados;
+}
 
 public async Task<List<OrderResponse>> ListarAsync(Guid? usuarioId)
 {
