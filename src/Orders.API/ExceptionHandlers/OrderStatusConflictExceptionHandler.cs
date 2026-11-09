@@ -14,7 +14,7 @@ public class OrderStatusConflictExceptionHandler : IExceptionHandler
         {
             return false;
         }
-
+        context.Items["errorCode"] = OrderStatusConflictException.ErrorCode;
         await Results.Problem(
             statusCode: StatusCodes.Status409Conflict,
             detail: error.Message,

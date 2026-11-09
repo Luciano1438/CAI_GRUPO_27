@@ -19,7 +19,8 @@ public class GlobalExceptionHandler : IExceptionHandler
     {
         const string codigo = "ORD-007";
         const string mensaje = "Error interno al procesar la orden.";
-
+        
+        context.Items["errorCode"] = codigo;
         _logger.LogError(
             exception,
             "Error inesperado en Orders. ErrorCode: {ErrorCode}, CorrelationId: {CorrelationId}",

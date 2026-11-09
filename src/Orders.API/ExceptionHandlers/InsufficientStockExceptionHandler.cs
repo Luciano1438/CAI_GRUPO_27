@@ -14,7 +14,7 @@ public class InsufficientStockExceptionHandler : IExceptionHandler
         {
             return false;
         }
-
+        context.Items["errorCode"] = InsufficientStockException.ErrorCode;
         await Results.Problem(
             statusCode: StatusCodes.Status422UnprocessableEntity,
             detail: error.Message,

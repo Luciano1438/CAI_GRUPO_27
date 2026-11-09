@@ -5,8 +5,10 @@ using Orders.API.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Orders.API.Exceptions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Orders.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddAppLogging();
 
 // Add services to the container.
 
@@ -16,6 +18,7 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
     options.InvalidModelStateResponseFactory = context =>
     {
         var http = context.HttpContext;
+        http.Items["errorCode"] = OrderValidationException.ErrorCode;
         const string mensaje = "Los datos de la orden son inválidos.";
 
         var problema = new ProblemDetails
@@ -88,7 +91,8 @@ app.UseStatusCodePages(async statusContext =>
     string codigo = status == 404
         ? OrderNotFoundException.ErrorCode
         : OrderValidationException.ErrorCode;
-
+    
+    http.Items["errorCode"] = codigo;
     string mensaje = status == 404
         ? "La ruta solicitada no existe."
         : "El método HTTP no está permitido para esta ruta.";

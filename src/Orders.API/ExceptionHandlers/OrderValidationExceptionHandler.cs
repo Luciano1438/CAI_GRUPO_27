@@ -15,7 +15,7 @@ public class OrderValidationExceptionHandler : IExceptionHandler
         {
             return false;
         }
-
+        context.Items["errorCode"] = OrderValidationException.ErrorCode;
         var problema = new ProblemDetails
         {
             Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",

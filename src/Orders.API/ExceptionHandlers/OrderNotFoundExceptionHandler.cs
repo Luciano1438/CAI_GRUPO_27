@@ -15,7 +15,7 @@ public class OrderNotFoundExceptionHandler : IExceptionHandler
         {
             return false;
         }
-
+        context.Items["errorCode"] = error.Codigo;
         var problema = new ProblemDetails
         {
             Type = "https://tools.ietf.org/html/rfc9110#section-15.5.5",

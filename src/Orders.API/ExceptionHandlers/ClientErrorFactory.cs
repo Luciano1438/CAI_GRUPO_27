@@ -25,7 +25,7 @@ public class ClientErrorFactory : IClientErrorFactory
         {
             const string mensaje =
                 "El tipo de contenido no es compatible. Enviá application/json.";
-
+            http.Items["errorCode"] = OrderValidationException.ErrorCode;
             problema.Detail = mensaje;
             problema.Extensions["errorCode"] = OrderValidationException.ErrorCode;
             problema.Extensions["errorMessage"] = mensaje;
