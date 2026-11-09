@@ -1,10 +1,50 @@
 using Orders.API.DTOs;
 using Orders.API.Exceptions;
+using Orders.API.Data;
+using Orders.API.Models;
 
 namespace Orders.API.Services;
 
 public class OrdersService
 {
+  private readonly OrderRepository _repository;
+
+public OrdersService(OrderRepository repository)
+{
+    _repository = repository;
+}
+
+public async Task<List<OrderResponse>> ListarAsync(Guid? usuarioId)
+{
+    List<Order> ordenes = await _repository.GetAllAsync(usuarioId);
+    List<OrderResponse> respuesta = new List<OrderResponse>();
+
+    foreach (Order orden in ordenes)
+    {
+        var ordenResponse = new OrderResponse
+        {
+            Id = orden.Id,
+            UsuarioId = orden.UsuarioId,
+            Total = orden.Total,
+            Estado = orden.Estado,
+            FechaCreacion = orden.FechaCreacion
+        };
+
+        foreach (OrderItem item in orden.Items)
+        {
+            ordenResponse.Items.Add(new OrderItemResponse
+            {
+                ProductoId = item.ProductoId,
+                Cantidad = item.Cantidad,
+                PrecioUnitario = item.PrecioUnitario
+            });
+        }
+
+        respuesta.Add(ordenResponse);
+    }
+
+    return respuesta;
+}
     public void ValidateCreateRequest(CreateOrderRequest? request)
     {
         if (request == null)

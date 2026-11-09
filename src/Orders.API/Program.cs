@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<OrdersService>();
+builder.Services.AddScoped<OrderRepository>();
 builder.Services.AddExceptionHandler<OrderValidationExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<DatabaseInitializer>();
