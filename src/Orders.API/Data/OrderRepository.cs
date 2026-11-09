@@ -116,6 +116,60 @@ private async Task<List<Order>> BuscarAsync(Guid? usuarioId, Guid? id)
         return ordenes;
     }
 
+   public async Task GuardarAsync(Order orden)
+{
+    string? connectionString =
+        _configuration.GetConnectionString("DefaultConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException(
+            "Falta configurar la conexion de Orders.");
+    }
+
+    using var connection = new SqliteConnection(connectionString);
+    await connection.OpenAsync();
+
+    using var transaction = connection.BeginTransaction();
+
+    string orderId = orden.Id.ToString();
+
+    await connection.ExecuteAsync(
+        """
+        INSERT INTO orders (id, usuario_id, total, estado, fecha_creacion)
+        VALUES (@Id, @UsuarioId, @Total, @Estado, @FechaCreacion);
+        """,
+        new
+        {
+            Id = orderId,
+            UsuarioId = orden.UsuarioId.ToString(),
+            Total = orden.Total.ToString(CultureInfo.InvariantCulture),
+            Estado = orden.Estado,
+            FechaCreacion = orden.FechaCreacion.ToString(
+                "O", CultureInfo.InvariantCulture)
+        },
+        transaction: transaction);
+
+    foreach (OrderItem item in orden.Items)
+    {
+        await connection.ExecuteAsync(
+            """
+            INSERT INTO order_items (order_id, producto_id, cantidad, precio_unitario)
+            VALUES (@OrderId, @ProductoId, @Cantidad, @PrecioUnitario);
+            """,
+            new
+            {
+                OrderId = orderId,
+                ProductoId = item.ProductoId.ToString(),
+                Cantidad = item.Cantidad,
+                PrecioUnitario = item.PrecioUnitario.ToString(
+                    CultureInfo.InvariantCulture)
+            },
+            transaction: transaction);
+    }
+
+    transaction.Commit();
+}
     private class OrdenGuardada
     {
         public string Id { get; set; } = string.Empty;
