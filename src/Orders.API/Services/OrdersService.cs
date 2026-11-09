@@ -21,26 +21,43 @@ public async Task<List<OrderResponse>> ListarAsync(Guid? usuarioId)
 
     foreach (Order orden in ordenes)
     {
-        var ordenResponse = new OrderResponse
-        {
-            Id = orden.Id,
-            UsuarioId = orden.UsuarioId,
-            Total = orden.Total,
-            Estado = orden.Estado,
-            FechaCreacion = orden.FechaCreacion
-        };
+        respuesta.Add(ConvertirAResponse(orden));
+    }
 
-        foreach (OrderItem item in orden.Items)
-        {
-            ordenResponse.Items.Add(new OrderItemResponse
-            {
-                ProductoId = item.ProductoId,
-                Cantidad = item.Cantidad,
-                PrecioUnitario = item.PrecioUnitario
-            });
-        }
+    return respuesta;
+}
 
-        respuesta.Add(ordenResponse);
+public async Task<OrderResponse> BuscarAsync(Guid id)
+{
+    Order? orden = await _repository.GetByIdAsync(id);
+
+    if (orden == null)
+    {
+        throw new OrderNotFoundException();
+    }
+
+    return ConvertirAResponse(orden);
+}
+
+private static OrderResponse ConvertirAResponse(Order orden)
+{
+    var respuesta = new OrderResponse
+    {
+        Id = orden.Id,
+        UsuarioId = orden.UsuarioId,
+        Total = orden.Total,
+        Estado = orden.Estado,
+        FechaCreacion = orden.FechaCreacion
+    };
+
+    foreach (OrderItem item in orden.Items)
+    {
+        respuesta.Items.Add(new OrderItemResponse
+        {
+            ProductoId = item.ProductoId,
+            Cantidad = item.Cantidad,
+            PrecioUnitario = item.PrecioUnitario
+        });
     }
 
     return respuesta;

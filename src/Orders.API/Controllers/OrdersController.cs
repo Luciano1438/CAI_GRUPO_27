@@ -27,4 +27,13 @@ public class OrdersController : ControllerBase
 
         return Ok(ordenes);
     }
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<OrderResponse>> Buscar(Guid id)
+    {
+      OrderResponse orden = await _service.BuscarAsync(id);
+
+      return Ok(orden);
+    }
 }

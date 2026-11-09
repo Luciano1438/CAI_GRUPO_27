@@ -10,6 +10,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<OrdersService>();
 builder.Services.AddScoped<OrderRepository>();
 builder.Services.AddExceptionHandler<OrderValidationExceptionHandler>();
+builder.Services.AddExceptionHandler<OrderNotFoundExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<DatabaseInitializer>();
 

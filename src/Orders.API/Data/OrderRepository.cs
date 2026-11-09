@@ -14,7 +14,24 @@ public class OrderRepository
         _configuration = configuration;
     }
 
-    public async Task<List<Order>> GetAllAsync(Guid? usuarioId)
+    public Task<List<Order>> GetAllAsync(Guid? usuarioId)
+{
+    return BuscarAsync(usuarioId, null);
+}
+
+public async Task<Order?> GetByIdAsync(Guid id)
+{
+    List<Order> ordenes = await BuscarAsync(null, id);
+
+    if (ordenes.Count == 0)
+    {
+        return null;
+    }
+
+    return ordenes[0];
+}
+
+private async Task<List<Order>> BuscarAsync(Guid? usuarioId, Guid? id)
     {
         string? connectionString =
             _configuration.GetConnectionString("DefaultConnection");
@@ -39,9 +56,14 @@ public class OrderRepository
                    fecha_creacion AS FechaCreacion
             FROM orders
             WHERE (@UsuarioId IS NULL OR usuario_id = @UsuarioId)
+             AND (@Id IS NULL OR id = @Id)
             ORDER BY fecha_creacion DESC, id;
             """,
-            new { UsuarioId = usuarioId?.ToString() },
+            new
+            {
+            UsuarioId = usuarioId?.ToString(),
+            Id = id?.ToString()
+            },
             transaction: transaction);
 
         List<Order> ordenes = new List<Order>();
