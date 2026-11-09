@@ -74,6 +74,37 @@ private async Task<List<OrderItem>> PrepararItemsAsync(
     return itemsPreparados;
 }
 
+private async Task<Order> PrepararOrdenAsync(
+    CreateOrderRequest request,
+    string correlationId,
+    CancellationToken cancellationToken)
+{
+    ValidateCreateRequest(request);
+
+    await ValidarUsuarioAsync(
+        request.UsuarioId, correlationId, cancellationToken);
+
+    List<OrderItem> items = await PrepararItemsAsync(
+        request.Items, correlationId, cancellationToken);
+
+    decimal total = 0m;
+
+    foreach (OrderItem item in items)
+    {
+        total += item.Cantidad * item.PrecioUnitario;
+    }
+
+    return new Order
+    {
+        Id = Guid.NewGuid(),
+        UsuarioId = request.UsuarioId,
+        Items = items,
+        Total = total,
+        Estado = "Pendiente",
+        FechaCreacion = DateTime.UtcNow
+    };
+}
+
 public async Task<List<OrderResponse>> ListarAsync(Guid? usuarioId)
 {
     List<Order> ordenes = await _repository.GetAllAsync(usuarioId);
