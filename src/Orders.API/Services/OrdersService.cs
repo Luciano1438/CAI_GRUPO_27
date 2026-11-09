@@ -8,11 +8,29 @@ namespace Orders.API.Services;
 public class OrdersService
 {
   private readonly OrderRepository _repository;
+private readonly UsersClient _usersClient;
 
-public OrdersService(OrderRepository repository)
+public OrdersService(OrderRepository repository, UsersClient usersClient)
 {
     _repository = repository;
+    _usersClient = usersClient;
 }
+
+public async Task ValidarUsuarioAsync(
+    Guid usuarioId,
+    string correlationId,
+    CancellationToken cancellationToken)
+{
+    bool existe = await _usersClient.ExisteAsync(
+        usuarioId, correlationId, cancellationToken);
+
+    if (!existe)
+    {
+        throw new OrderNotFoundException("ORD-003", "Usuario no encontrado.");
+    }
+}
+
+
 
 public async Task<List<OrderResponse>> ListarAsync(Guid? usuarioId)
 {

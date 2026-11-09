@@ -25,7 +25,7 @@ public class OrderNotFoundExceptionHandler : IExceptionHandler
             Instance = context.Request.Path.Value
         };
 
-        problema.Extensions["errorCode"] = OrderNotFoundException.ErrorCode;
+        problema.Extensions["errorCode"] = error.Codigo;
         problema.Extensions["errorMessage"] = error.Message;
         problema.Extensions["correlationId"] = context.TraceIdentifier;
 
