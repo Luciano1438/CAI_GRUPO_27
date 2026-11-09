@@ -1,6 +1,171 @@
 @Orders.API_HostAddress = http://localhost:5165
 
-GET {{Orders.API_HostAddress}}/weatherforecast/
+# Reemplazar por IDs reales de Users.API y Products.API.
+@usuarioId = 00000000-0000-0000-0000-000000000000
+@productoId = 00000000-0000-0000-0000-000000000000
+
+# Después de crear una orden, copiar aquí el ID devuelto.
+@ordenId = 00000000-0000-0000-0000-000000000000
+
+# Este ID no debe existir en las bases de datos.
+@idInexistente = 11111111-1111-1111-1111-111111111111
+
+### Listar órdenes - esperado: 200
+GET {{Orders.API_HostAddress}}/api/orders
 Accept: application/json
 
-###
+### Filtrar por usuario - esperado: 200
+GET {{Orders.API_HostAddress}}/api/orders?usuarioId={{usuarioId}}
+Accept: application/json
+
+### Crear orden - esperado: 201 y cabecera Location
+# Requiere usuario existente y producto con stock >= 2.
+# Copiar el ID de la respuesta en @ordenId.
+POST {{Orders.API_HostAddress}}/api/orders
+Content-Type: application/json
+X-Correlation-Id: prueba-crear-orden
+
+{
+  "usuarioId": "{{usuarioId}}",
+  "items": [
+    {
+      "productoId": "{{productoId}}",
+      "cantidad": 2
+    }
+  ]
+}
+
+### Consultar orden creada - esperado: 200
+GET {{Orders.API_HostAddress}}/api/orders/{{ordenId}}
+Accept: application/json
+
+### Productos repetidos - esperado: 201 con un solo ítem de cantidad 3
+# Requiere producto con stock >= 3. Crea otra orden.
+POST {{Orders.API_HostAddress}}/api/orders
+Content-Type: application/json
+
+{
+  "usuarioId": "{{usuarioId}}",
+  "items": [
+    {
+      "productoId": "{{productoId}}",
+      "cantidad": 1
+    },
+    {
+      "productoId": "{{productoId}}",
+      "cantidad": 2
+    }
+  ]
+}
+
+### Confirmar orden - esperado: 200
+# Ejecutar sobre una orden Pendiente.
+PUT {{Orders.API_HostAddress}}/api/orders/{{ordenId}}/status
+Content-Type: application/json
+
+{
+  "estado": "Confirmada"
+}
+
+### Transición inválida - esperado: 409, ORD-006
+# Ejecutar después de confirmar la orden.
+PUT {{Orders.API_HostAddress}}/api/orders/{{ordenId}}/status
+Content-Type: application/json
+
+{
+  "estado": "Pendiente"
+}
+
+### Orden inexistente - esperado: 404, ORD-001
+# El header y el cuerpo deben conservar el correlation ID enviado.
+GET {{Orders.API_HostAddress}}/api/orders/{{idInexistente}}
+X-Correlation-Id: prueba-orders-001
+
+### Filtro inválido - esperado: 400, ORD-002
+GET {{Orders.API_HostAddress}}/api/orders?usuarioId=no-es-guid
+
+### Datos incompletos - esperado: 400, ORD-002
+POST {{Orders.API_HostAddress}}/api/orders
+Content-Type: application/json
+
+{}
+
+### Cantidad inválida - esperado: 400, ORD-002
+# Configurar primero los IDs reales.
+POST {{Orders.API_HostAddress}}/api/orders
+Content-Type: application/json
+
+{
+  "usuarioId": "{{usuarioId}}",
+  "items": [
+    {
+      "productoId": "{{productoId}}",
+      "cantidad": 0
+    }
+  ]
+}
+
+### Usuario inexistente - esperado: 404, ORD-003
+# Users.API debe estar corriendo y productoId debe ser un GUID no vacío.
+POST {{Orders.API_HostAddress}}/api/orders
+Content-Type: application/json
+
+{
+  "usuarioId": "{{idInexistente}}",
+  "items": [
+    {
+      "productoId": "{{productoId}}",
+      "cantidad": 1
+    }
+  ]
+}
+
+### Producto inexistente - esperado: 404, ORD-004
+# Requiere usuario existente y Users.API y Products.API corriendo.
+POST {{Orders.API_HostAddress}}/api/orders
+Content-Type: application/json
+
+{
+  "usuarioId": "{{usuarioId}}",
+  "items": [
+    {
+      "productoId": "{{idInexistente}}",
+      "cantidad": 1
+    }
+  ]
+}
+
+### Stock insuficiente - esperado: 422, ORD-005
+# Requiere IDs reales y producto con stock menor a 2147483647.
+POST {{Orders.API_HostAddress}}/api/orders
+Content-Type: application/json
+
+{
+  "usuarioId": "{{usuarioId}}",
+  "items": [
+    {
+      "productoId": "{{productoId}}",
+      "cantidad": 2147483647
+    }
+  ]
+}
+
+### Estado desconocido - esperado: 400, ORD-002
+PUT {{Orders.API_HostAddress}}/api/orders/{{ordenId}}/status
+Content-Type: application/json
+
+{
+  "estado": "EstadoInvalido"
+}
+
+### Tipo de contenido incompatible - esperado: 415
+POST {{Orders.API_HostAddress}}/api/orders
+Content-Type: text/plain
+
+prueba
+
+### Ruta inexistente - esperado: 404
+GET {{Orders.API_HostAddress}}/api/ruta-inexistente
+
+### Método no permitido - esperado: 405
+DELETE {{Orders.API_HostAddress}}/api/orders
