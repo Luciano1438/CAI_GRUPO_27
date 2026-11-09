@@ -73,7 +73,18 @@ private async Task<List<OrderItem>> PrepararItemsAsync(
 
     return itemsPreparados;
 }
+public async Task<OrderResponse> CrearAsync(
+    CreateOrderRequest request,
+    string correlationId,
+    CancellationToken cancellationToken)
+{
+    Order orden = await PrepararOrdenAsync(
+        request, correlationId, cancellationToken);
 
+    await _repository.GuardarAsync(orden);
+
+    return ConvertirAResponse(orden);
+}
 private async Task<Order> PrepararOrdenAsync(
     CreateOrderRequest request,
     string correlationId,

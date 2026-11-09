@@ -36,4 +36,15 @@ public class OrdersController : ControllerBase
 
       return Ok(orden);
     }
+    [HttpPost]
+[ProducesResponseType(typeof(OrderResponse), StatusCodes.Status201Created)]
+public async Task<ActionResult<OrderResponse>> Crear(
+    [FromBody] CreateOrderRequest request,
+    CancellationToken cancellationToken)
+{
+    OrderResponse orden = await _service.CrearAsync(
+        request, HttpContext.TraceIdentifier, cancellationToken);
+
+    return CreatedAtAction(nameof(Buscar), new { id = orden.Id }, orden);
+}
 }

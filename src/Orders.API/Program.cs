@@ -4,6 +4,7 @@ using Orders.API.Data;
 using Orders.API.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Orders.API.Exceptions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
 {
+    
     options.InvalidModelStateResponseFactory = context =>
     {
         var http = context.HttpContext;
@@ -35,6 +37,8 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
         return respuesta;
     };
 });
+
+builder.Services.AddTransient<IClientErrorFactory, ClientErrorFactory>();
 builder.Services.AddScoped<OrdersService>();
 builder.Services.AddScoped<OrderRepository>();
 builder.Services.AddExceptionHandler<OrderValidationExceptionHandler>();
