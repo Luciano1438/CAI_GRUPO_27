@@ -86,3 +86,11 @@ Estas pruebas no verifican descuento ni reserva de stock.
 
 Quedan fuera de esta ejecución las pruebas de concurrencia, carga
 y todas las combinaciones posibles de cambios de estado.
+
+## Health check de Orders
+
+| Prueba | Resultado observado |
+|---|---|
+| `/health/ready` con la base habitual | [200 OK — Healthy](../../docs/capturas/orders/200-health-ready.png) |
+| `/health/ready` con una base temporal sin `order_items.precio_unitario` | [503 Service Unavailable — Unhealthy](../../docs/capturas/orders/503-health-ready.png) |
+| `/health/live` en la misma instancia temporal | 200 OK — Healthy |

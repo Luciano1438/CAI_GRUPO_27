@@ -37,16 +37,15 @@ public class OrdersDatabaseHealthCheck : IHealthCheck
             await connection.OpenAsync(cancellationToken);
 
             await connection.ExecuteAsync(new CommandDefinition(
-                """
-                SELECT id, usuario_id, total, estado, fecha_creacion, fecha_actualizacion
-                FROM orders
-                LIMIT 0;
-
-                SELECT id, order_id, producto_id, cantidad, precio_unitario
-                FROM order_items
-                LIMIT 0;
-                """,
-                cancellationToken: cancellationToken));
+    """
+    SELECT o.id, o.usuario_id, o.total, o.estado,
+           o.fecha_creacion, o.fecha_actualizacion,
+           i.id, i.order_id, i.producto_id, i.cantidad, i.precio_unitario
+    FROM orders AS o
+    CROSS JOIN order_items AS i
+    LIMIT 0;
+    """,
+    cancellationToken: cancellationToken));
 
             return HealthCheckResult.Healthy("La base de Orders está disponible.");
         }
