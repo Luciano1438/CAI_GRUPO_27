@@ -1,4 +1,4 @@
-﻿using Notifications.API.Data;
+using Notifications.API.Data;
 using Notifications.API.DTOs;
 using Notifications.API.Exceptions;
 using Notifications.API.Models;
@@ -35,7 +35,7 @@ public class NotificationService
 
         if (!usuarioExiste)
         {
-            throw new BusinessRuleException(
+            throw new NotFoundException(
                 "NTF-001",
                 "Usuario no encontrado.");
         }
@@ -72,7 +72,7 @@ public class NotificationService
 
         if (!usuarioExiste)
         {
-            throw new BusinessRuleException(
+            throw new NotFoundException(
                 "NTF-001",
                 "Usuario no encontrado.");
         }
@@ -82,19 +82,25 @@ public class NotificationService
 
         if (notifications.Count == 0)
         {
-            throw new BusinessRuleException(
+            throw new NotFoundException(
                 "NTF-003",
                 "No se encontraron notificaciones para el usuario.");
         }
 
-        return notifications.Select(notification => new NotificationResponse
+        var respuesta = new List<NotificationResponse>();
+        foreach (var notification in notifications)
         {
-            Id = notification.Id,
-            UsuarioId = notification.UsuarioId,
-            Tipo = notification.Tipo,
-            Mensaje = notification.Mensaje,
-            Estado = notification.Estado,
-            FechaEnvio = notification.FechaEnvio
-        }).ToList();
+            respuesta.Add(new NotificationResponse
+            {
+                Id = notification.Id,
+                UsuarioId = notification.UsuarioId,
+                Tipo = notification.Tipo,
+                Mensaje = notification.Mensaje,
+                Estado = notification.Estado,
+                FechaEnvio = notification.FechaEnvio
+            });
+        }
+
+        return respuesta;
     }
 }

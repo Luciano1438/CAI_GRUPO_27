@@ -222,6 +222,8 @@ Las bases se crean localmente al iniciar cada API. La configuración deberá rev
 | Notifications | `NTF-002` | Datos de la notificación inválidos |
 | Notifications | `NTF-003` | El usuario no tiene notificaciones |
 | Notifications | `NTF-004` | Error interno al procesar la notificación |
+| Notifications | `NTF-005` | Método HTTP no permitido |
+| Notifications | `NTF-006` | Tipo de contenido no soportado |
 | Orders | `ORD-001` | Orden no encontrada |
 | Orders | `ORD-002` | Datos de la orden inválidos |
 | Orders | `ORD-003` | Usuario no encontrado |
@@ -242,13 +244,13 @@ Las APIs implementadas exponen:
 
 Los servicios usan Serilog para registrar solicitudes y errores. Los registros JSON se guardan en la carpeta `logs` de cada servicio. El encabezado `X-Correlation-Id` permite relacionar una solicitud con sus registros y, cuando corresponde, con las llamadas entre servicios.
 
+Users.API y Notifications.API también publican métricas mediante `System.Diagnostics.Metrics`: contadores de solicitudes y errores, y un histograma de duración en milisegundos. Los instrumentos son `users.http.requests`, `users.http.errors`, `users.http.request.duration`, `notifications.http.requests`, `notifications.http.errors` y `notifications.http.request.duration`. Incluyen servicio, método, ruta, código HTTP y, cuando hay error, su código funcional.
+
+El detalle de excepciones inesperadas se controla con `ErrorHandling:IncludeExceptionMessage`: está habilitado en Development y deshabilitado en Production. Las respuestas no incluyen stack traces.
+
 ## Pruebas
 
 El procedimiento de prueba manual está en [tests/README.md](tests/README.md). Los archivos `.http` de cada API también contienen solicitudes de ejemplo.
 
 Ese procedimiento cubre Productos, Carrito y el bloqueo de borrado por órdenes activas. Para probar la integración, iniciar las cinco APIs en los puertos indicados, crear un usuario y un producto, y usar sus IDs al crear una orden. Después comprobar el borrado del producto antes y después de cancelar la orden. Las capturas de Swagger están en [docs/capturas](docs/capturas).
 
-## Pendiente
-
-- Incorporar y verificar los últimos ajustes anunciados de Users y Notifications.
-- Confirmar la configuración de persistencia que se utilizará en la evaluación.
