@@ -47,15 +47,34 @@ public class CrearOrdenExamplesFilter : IOperationFilter
       };
     }
 
-        if (context.MethodInfo.DeclaringType == typeof(OrdersController))
+    if (context.MethodInfo.DeclaringType == typeof(OrdersController))
     {
       const string id = "11111111-1111-4111-8111-111111111111";
 
+      var ruta = context.MethodInfo.Name switch
+      {
+        nameof(OrdersController.Buscar) => $"/api/orders/{id}",
+        nameof(OrdersController.CambiarEstado) => $"/api/orders/{id}/status",
+        _ => "/api/orders"
+      };
+
+      AgregarEjemploError("500", "Internal Server Error", "ORD-007",
+          "Error interno al procesar la orden.", ruta);
+
+      if (context.MethodInfo.Name is nameof(OrdersController.Crear)
+    or nameof(OrdersController.CambiarEstado))
+      {
+        AgregarEjemploError("415", "Unsupported Media Type", "ORD-002",
+            "El tipo de contenido no es compatible. Enviá application/json.", ruta);
+      }
+      
       switch (context.MethodInfo.Name)
       {
         case nameof(OrdersController.Crear):
           AgregarEjemploError("400", "Bad Request", "ORD-002",
               "Indicá el ID del usuario.", "/api/orders");
+          AgregarEjemploError("404", "Not Found", "ORD-003",
+    "Usuario no encontrado.", "/api/orders");
           break;
         case nameof(OrdersController.Buscar):
           AgregarEjemploError("404", "Not Found", "ORD-001",
