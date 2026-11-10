@@ -5,6 +5,7 @@ using Carrito = Cart.API.Models.Cart;
 
 namespace Cart.API.Controllers;
 
+/// <summary>Permite consultar y modificar el carrito de un usuario.</summary>
 [ApiController]
 [Route("api/cart/{userId}")]
 [Tags("Cart")]

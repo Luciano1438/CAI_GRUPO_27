@@ -4,6 +4,7 @@ using Orders.API.Services;
 
 namespace Orders.API.Controllers;
 
+/// <summary>Permite crear, consultar y cambiar el estado de las ordenes.</summary>
 [ApiController]
 [Route("api/orders")]
 [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]

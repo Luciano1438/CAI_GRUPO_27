@@ -5,6 +5,7 @@ using Products.API.Services;
 
 namespace Products.API.Controllers;
 
+/// <summary>Expone las operaciones del catalogo de productos.</summary>
 [ApiController]
 [Route("api/products")]
 [Tags("Products")]

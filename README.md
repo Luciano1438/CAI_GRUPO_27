@@ -52,6 +52,8 @@ Products.API consulta Orders.API en `http://localhost:5165/`, configurado en `Se
 
 Notifications.API consulta Users.API por HTTP en `http://localhost:5290`, de acuerdo con el perfil `http` de Users.API. Las direcciones entre servicios se configuran en el `appsettings.json` de cada API.
 
+Las cinco APIs muestran Swagger UI con Swashbuckle. Users y Notifications conservan la generación OpenAPI de ASP.NET Core en `/openapi/v1.json`, con sus comentarios XML y ejemplos. Las otras tres publican el documento en `/swagger/v1/swagger.json`.
+
 ## Requisitos y compilación
 
 Se necesita el SDK de .NET 10. Desde la raíz del repositorio:

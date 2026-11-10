@@ -129,14 +129,13 @@ Unhealthy, mientras live conserva 200 Healthy. Luego se restaura la tabla y
 ready debe volver a 200 sin reiniciar. Se usan bases temporales separadas.
 El ejemplo para los otros integrantes esta en `docs/EJEMPLO_SALUD.md`.
 
-## Pendientes antes de integrar con los otros servicios
+## Integracion con el grupo
 
-- Verificar la consulta y la correlacion con Orders.API real de Christian.
-  El contrato usado esta en docs/INTEGRACION_ORDERS.md.
-- Revisar con Agustin y Christian la convencion comun de logs y errores.
-- Cada integrante adapta y verifica los controles de salud en sus servicios.
-- Revisar con el grupo el conjunto de evidencias y la demo de entrega. Las
-  capturas actuales de errores estan en docs/capturas.
+Orders.API ya esta integrada en el puerto 5165. La consulta real antes del
+borrado, los estados de las ordenes y la correlacion se verifican con el
+procedimiento de tests/README.md. El contrato esta en docs/INTEGRACION_ORDERS.md.
+Las capturas de errores estan en docs/capturas. Para la demo, iniciar las APIs
+con los puertos del README principal y usar datos de prueba.
 
 Para cerrar los avisos de dependencias se actualizaron
 Microsoft.Data.Sqlite a 10.0.14, sin suprimirlos. Se retiro el panel opcional

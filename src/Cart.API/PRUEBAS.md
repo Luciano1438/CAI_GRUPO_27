@@ -86,12 +86,10 @@ eventos de consola y del archivo JSON.
 
 Cart conserva un X-Correlation-Id recibido de hasta 100 caracteres ASCII sin
 espacios, o genera un Guid. Lo devuelve como encabezado y lo propaga a
-Productos. Falta coordinar con Christian y Agustin el ejemplo comun definitivo;
-Productos tambien conserva el encabezado y lo envia a Orders. La propagacion
-se comprobo durante el desarrollo con Productos real y con Orders simulado.
-La prueba con Orders real sigue pendiente de la integracion del grupo.
+Productos. Productos tambien conserva el encabezado y lo envia a Orders.
+Las cinco APIs estan integradas y usan los puertos del README principal.
 
-## Persistencia y pendientes
+## Persistencia e integracion
 
 Se usa SQLite/Dapper siguiendo la base MiniApi, con tablas carts y cart_items
 propias. Esa es la base de persistencia adoptada por el equipo a partir de
@@ -103,8 +101,8 @@ documenta los dos casos de 404: carrito inexistente e item inexistente.
 Se actualizo Microsoft.Data.Sqlite a 10.0.14 para dejar de usar la dependencia
 nativa con la advertencia de seguridad detectada en la auditoria.
 
-Antes de cerrar: revisar los contratos comunes con el grupo y probar el
-conjunto con Orders real. Las capturas actuales de errores estan en docs/capturas.
+El procedimiento conjunto incluye Orders real y la consulta previa al borrado
+de productos. Las capturas de errores estan en docs/capturas.
 
 El [procedimiento manual](../../tests/README.md) permite probar desde Swagger
 el agregado, reemplazo, stock, validaciones, retiro de items y vaciado. Tambien

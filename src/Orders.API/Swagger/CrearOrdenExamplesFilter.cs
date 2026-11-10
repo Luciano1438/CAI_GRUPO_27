@@ -10,6 +10,27 @@ public class CrearOrdenExamplesFilter : IOperationFilter
   public void Apply(OpenApiOperation operation, OperationFilterContext context)
   {
     if (context.MethodInfo.DeclaringType == typeof(OrdersController)
+        && operation.RequestBody?.Content is not null
+        && (context.MethodInfo.Name == nameof(OrdersController.Crear)
+            || context.MethodInfo.Name == nameof(OrdersController.CambiarEstado)))
+    {
+      string solicitud = context.MethodInfo.Name == nameof(OrdersController.Crear)
+          ? """
+            {
+              "usuarioId": "22222222-2222-4222-8222-222222222222",
+              "items": [
+                { "productoId": "33333333-3333-4333-8333-333333333333", "cantidad": 2 }
+              ]
+            }
+            """
+          : """{"estado":"Confirmada"}""";
+      foreach (var medioSolicitud in operation.RequestBody.Content.Values)
+      {
+        medioSolicitud.Example = JsonNode.Parse(solicitud);
+      }
+    }
+
+    if (context.MethodInfo.DeclaringType == typeof(OrdersController)
 && operation.Responses is not null
 && operation.Responses.TryGetValue("200", out var respuesta)
 && respuesta.Content is not null
