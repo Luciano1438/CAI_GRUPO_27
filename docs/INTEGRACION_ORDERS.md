@@ -4,7 +4,7 @@ Products.API usa GET `/api/orders`, que ya aparece en la consigna. No se agrega
 ningun endpoint obligatorio a Orders ni se accede a su base de datos.
 
 La direccion se configura en `Services:Orders` o `Services__Orders`. El valor
-local propuesto es `http://localhost:5103/`, a coordinar con Christian.
+local es `http://localhost:5165/`, el puerto HTTP de Orders.API.
 
 Products necesita que el listado devuelva el JSON de la consigna, con estado e
 items.productoId. Los demas campos pueden estar presentes: se ignoran en esta
@@ -32,7 +32,11 @@ ausencia de ordenes. El timeout es de cinco segundos y se propaga el encabezado
 X-Correlation-Id.
 
 Por esto, para probar un DELETE exitoso hay que tener Orders real disponible.
-Los scripts de tests usan un servidor simulado, claramente separado de las APIs.
-La comprobacion real entre los servicios queda pendiente de la integracion del
-grupo. La consulta valida el estado recibido en ese momento; no reserva stock
-ni agrega transacciones distribuidas.
+Iniciar Users en 5290, Products en 5208 y Orders en 5165 con los perfiles http.
+Crear un usuario y un producto; usar sus IDs para crear una orden. Con la orden
+Pendiente, el DELETE del producto debe devolver 409 PRD-004. Tras pasarla a
+Cancelada, repetir el DELETE: debe devolver 204. Las solicitudes de ejemplo
+estan en src/Orders.API/Orders.API.http.
+
+La consulta valida el estado recibido en ese momento; no reserva stock ni
+agrega transacciones distribuidas.

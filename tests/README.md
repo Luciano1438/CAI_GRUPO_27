@@ -115,7 +115,9 @@ entre comillas pueden convertirse a numeros; un texto no numerico se rechaza.
 
 ## 7. Borrar productos y comprobar Orders
 
-Esta parte requiere Orders real y sus datos de prueba, pendientes de integrar.
+Iniciar Users en 5290, Products en 5208 y Orders en 5165. Crear un usuario
+desde Users, copiar su Id y crear una orden con ese usuario y el producto
+de prueba. Usar cantidad 1. Esperado: 201 y estado Pendiente.
 
 - Producto incluido en una orden Pendiente o Confirmada: DELETE devuelve 409
   PRD-004 y GET confirma que el producto sigue existiendo.
@@ -124,7 +126,9 @@ Esta parte requiere Orders real y sus datos de prueba, pendientes de integrar.
 - Si Orders no esta disponible, DELETE devuelve 500 PRD-005 y el producto se
   conserva. Es una respuesta controlada, no permiso para omitir la consulta.
 
-No presentar la integracion real como probada antes de incorporar Orders.
+Cambiar la orden a Cancelada desde PUT /api/orders/{id}/status y repetir el
+DELETE del producto: ahora debe devolver 204. El historial de la orden debe
+seguir disponible aunque el producto ya no exista.
 
 ## 8. Salud, logs y dependencias
 
@@ -154,5 +158,5 @@ El historial de comprobaciones previas figura en PRUEBAS.md de cada servicio.
 Este procedimiento es manual. No reproduce las pruebas automatizadas anteriores
 de concurrencia, timeout o alteracion de tablas. Esas herramientas de desarrollo
 se conservaron fuera del repo; la entrega no incluye scripts PowerShell ni un
-servidor simulado. La prueba completa con Users, Orders y Notifications reales
-sigue pendiente del trabajo del grupo.
+servidor simulado. Los casos propios de Orders estan en src/Orders.API/PRUEBAS.md;
+para Users y Notifications, usar sus Swagger con los puertos del README.
