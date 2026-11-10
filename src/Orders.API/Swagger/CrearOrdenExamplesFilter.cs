@@ -88,8 +88,8 @@ public class CrearOrdenExamplesFilter : IOperationFilter
         AgregarEjemploError("415", "Unsupported Media Type", "ORD-002",
             "El tipo de contenido no es compatible. Enviá application/json.", ruta);
       }
-      
-            switch (context.MethodInfo.Name)
+
+      switch (context.MethodInfo.Name)
       {
         case nameof(OrdersController.Listar):
           AgregarEjemploError("400", "Bad Request", "ORD-002",
@@ -121,11 +121,15 @@ public class CrearOrdenExamplesFilter : IOperationFilter
       }
     }
 
-        void AgregarEjemploError(string codigoHttp, string titulo, string codigoError,
-        string mensaje, string ruta, string? nombre = null)
+    void AgregarEjemploError(string codigoHttp, string titulo, string codigoError,
+    string mensaje, string ruta, string? nombre = null)
     {
-      if (operation.Responses?.TryGetValue(codigoHttp, out var error) != true
-          || error.Content?.TryGetValue("application/problem+json", out var json) != true)
+      if (operation.Responses is null
+    || !operation.Responses.TryGetValue(codigoHttp, out var error)
+    || error is null
+    || error.Content is null
+    || !error.Content.TryGetValue("application/problem+json", out var json)
+    || json is null)
       {
         return;
       }
