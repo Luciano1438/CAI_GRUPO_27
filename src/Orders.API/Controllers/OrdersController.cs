@@ -6,7 +6,7 @@ namespace Orders.API.Controllers;
 
 [ApiController]
 [Route("api/orders")]
-[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+[ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status500InternalServerError, "application/problem+json")]
 public class OrdersController : ControllerBase
 {
     private readonly OrdersService _service;
@@ -21,8 +21,8 @@ public class OrdersController : ControllerBase
     /// </summary>
     /// <param name="usuarioId">Identificador del usuario por el cual filtrar.</param>
     [HttpGet]
-    [ProducesResponseType(typeof(List<OrderResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(List<OrderResponse>), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status400BadRequest, "application/problem+json")]
     public async Task<ActionResult<List<OrderResponse>>> Listar(
         [FromQuery] Guid? usuarioId)
     {
@@ -36,8 +36,8 @@ public class OrdersController : ControllerBase
     /// </summary>
     /// <response code="404">La orden no existe (ORD-001).</response>
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status404NotFound, "application/problem+json")]
     public async Task<ActionResult<OrderResponse>> Buscar(Guid id)
     {
         OrderResponse orden = await _service.BuscarAsync(id);
@@ -58,11 +58,11 @@ public class OrdersController : ControllerBase
     /// <response code="415">El tipo de contenido no es compatible. Enviar application/json.</response>
     /// <response code="422">Un producto no tiene stock suficiente (ORD-005).</response>
     [HttpPost]
-    [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status415UnsupportedMediaType)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status201Created, "application/json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status404NotFound, "application/problem+json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status415UnsupportedMediaType, "application/problem+json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status422UnprocessableEntity, "application/problem+json")]
     public async Task<ActionResult<OrderResponse>> Crear(
         [FromBody] CreateOrderRequest request,
         CancellationToken cancellationToken)
@@ -81,11 +81,11 @@ public class OrdersController : ControllerBase
     /// <response code="409">El cambio de estado no está permitido (ORD-006).</response>
     /// <response code="415">El tipo de contenido no es compatible. Enviar application/json.</response>
     [HttpPut("{id:guid}/status")]
-    [ProducesResponseType(typeof(UpdateOrderStatusResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status415UnsupportedMediaType)]
+    [ProducesResponseType(typeof(UpdateOrderStatusResponse), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status400BadRequest, "application/problem+json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status404NotFound, "application/problem+json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status409Conflict, "application/problem+json")]
+    [ProducesResponseType(typeof(OrderErrorResponse), StatusCodes.Status415UnsupportedMediaType, "application/problem+json")]
     public async Task<ActionResult<UpdateOrderStatusResponse>> CambiarEstado(
         Guid id,
         [FromBody] UpdateOrderStatusRequest request)

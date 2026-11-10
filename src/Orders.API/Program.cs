@@ -10,6 +10,7 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Orders.API.HealthChecks;
+using Orders.API.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddAppLogging();
@@ -81,6 +82,8 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.IncludeXmlComments(
         Path.Combine(AppContext.BaseDirectory, "Orders.API.xml"));
+
+    options.OperationFilter<CrearOrdenExamplesFilter>();
 });
 
 var app = builder.Build();
