@@ -327,8 +327,6 @@ app.UseSerilogRequestLogging(options =>
     };
 });
 
-app.UseExceptionHandler();
-
 // AGREGA UN IDENTIFICADOR A CADA PEDIDO.
 app.Use(async (context, next) =>
 {
@@ -364,6 +362,8 @@ app.Use(async (context, next) =>
 app.Use(async (context, next) =>
 {
     var startedAt = Stopwatch.GetTimestamp();
+    var endpoint = context.GetEndpoint() as RouteEndpoint;
+    string ruta = endpoint?.RoutePattern.RawText ?? "unmatched";
     var logger = context.RequestServices
         .GetRequiredService<ILoggerFactory>()
         .CreateLogger("Notifications.API.RequestStart");
@@ -382,9 +382,13 @@ app.Use(async (context, next) =>
     {
         ApiMetrics.Record(
             context,
-            Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds);
+            Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
+            ruta);
     }
 });
+// Las metricas observan la respuesta definitiva del manejador de errores.
+app.UseExceptionHandler();
+
 // AGREGA EL FORMATO COMÚN A ERRORES HTTP SIN RESPUESTA.
 app.UseStatusCodePages(async statusContext =>
 {
@@ -455,9 +459,9 @@ using (var scope = app.Services.CreateScope())
 
 // Configure the HTTP request pipeline.
 app.MapOpenApi();
-app.UseSwaggerUi(options =>
+app.UseSwaggerUI(options =>
 {
-    options.DocumentPath = "/openapi/v1.json";
+    options.SwaggerEndpoint("/openapi/v1.json", "Notifications API v1");
 });
 
 app.UseHttpsRedirection();

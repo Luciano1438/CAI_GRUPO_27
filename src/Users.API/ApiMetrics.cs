@@ -19,16 +19,13 @@ internal static class ApiMetrics
     /// <summary>
     /// Registra el resultado y la duración de una solicitud.
     /// </summary>
-    internal static void Record(HttpContext context, double durationMilliseconds)
+    internal static void Record(HttpContext context, double durationMilliseconds, string route)
     {
-        var endpoint = context.GetEndpoint() is RouteEndpoint route
-            ? route.RoutePattern.RawText ?? "unmatched"
-            : "unmatched";
         var tags = new TagList
         {
             { "service", "Users.API" },
             { "http.request.method", context.Request.Method },
-            { "http.route", endpoint },
+            { "http.route", route },
             { "http.response.status_code", context.Response.StatusCode }
         };
 
