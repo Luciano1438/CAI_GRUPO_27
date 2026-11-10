@@ -68,43 +68,82 @@ public class CrearOrdenExamplesFilter : IOperationFilter
             "El tipo de contenido no es compatible. Enviá application/json.", ruta);
       }
       
-      switch (context.MethodInfo.Name)
+            switch (context.MethodInfo.Name)
       {
+        case nameof(OrdersController.Listar):
+          AgregarEjemploError("400", "Bad Request", "ORD-002",
+              "Los datos de la orden son inválidos.", ruta);
+          break;
+
         case nameof(OrdersController.Crear):
           AgregarEjemploError("400", "Bad Request", "ORD-002",
-              "Indicá el ID del usuario.", "/api/orders");
+              "Indicá el ID del usuario.", ruta);
           AgregarEjemploError("404", "Not Found", "ORD-003",
-    "Usuario no encontrado.", "/api/orders");
+              "Usuario no encontrado.", ruta, "usuarioNoEncontrado");
+          AgregarEjemploError("404", "Not Found", "ORD-004",
+              "Producto no encontrado.", ruta, "productoNoEncontrado");
           break;
+
         case nameof(OrdersController.Buscar):
           AgregarEjemploError("404", "Not Found", "ORD-001",
-              "Orden no encontrada.", $"/api/orders/{id}");
+              "Orden no encontrada.", ruta);
           break;
+
         case nameof(OrdersController.CambiarEstado):
+          AgregarEjemploError("400", "Bad Request", "ORD-002",
+              "El estado indicado no es válido.", ruta);
+          AgregarEjemploError("404", "Not Found", "ORD-001",
+              "Orden no encontrada.", ruta);
           AgregarEjemploError("409", "Conflict", "ORD-006",
-              "No se puede cambiar de Confirmada a Pendiente.",
-              $"/api/orders/{id}/status");
+              "No se puede cambiar de Confirmada a Pendiente.", ruta);
           break;
       }
     }
 
-    void AgregarEjemploError(string codigoHttp, string titulo, string codigoError,
-        string mensaje, string ruta)
+        void AgregarEjemploError(string codigoHttp, string titulo, string codigoError,
+        string mensaje, string ruta, string? nombre = null)
     {
-      if (operation.Responses?.TryGetValue(codigoHttp, out var error) == true
-          && error.Content?.TryGetValue("application/problem+json", out var json) == true)
+      if (operation.Responses?.TryGetValue(codigoHttp, out var error) != true
+          || error.Content?.TryGetValue("application/problem+json", out var json) != true)
       {
-        json.Example = new JsonObject
-        {
-          ["title"] = titulo,
-          ["status"] = int.Parse(codigoHttp),
-          ["detail"] = mensaje,
-          ["instance"] = ruta,
-          ["errorCode"] = codigoError,
-          ["errorMessage"] = mensaje,
-          ["correlationId"] = $"demo-orders-{codigoHttp}"
-        };
+        return;
       }
+
+      string tipo = codigoHttp switch
+      {
+        "400" => "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+        "404" => "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+        "409" => "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+        "415" => "https://tools.ietf.org/html/rfc9110#section-15.5.16",
+        "500" => "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+        _ => "about:blank"
+      };
+
+      var ejemplo = new JsonObject
+      {
+        ["type"] = tipo,
+        ["title"] = titulo,
+        ["status"] = int.Parse(codigoHttp),
+        ["detail"] = mensaje,
+        ["instance"] = ruta,
+        ["errorCode"] = codigoError,
+        ["errorMessage"] = mensaje,
+        ["correlationId"] = $"demo-orders-{codigoHttp}"
+      };
+
+      if (nombre is null)
+      {
+        json.Example = ejemplo;
+        return;
+      }
+
+      json.Example = null;
+      json.Examples ??= new Dictionary<string, IOpenApiExample>();
+      json.Examples[nombre] = new OpenApiExample
+      {
+        Summary = mensaje,
+        Value = ejemplo
+      };
     }
 
 
